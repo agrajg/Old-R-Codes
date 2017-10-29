@@ -1,0 +1,26 @@
+rm(list=ls (all=TRUE))
+library("AER", lib.loc="/home/agraj/R/x86_64-pc-linux-gnu-library/2.14")
+library("gmm", lib.loc="/home/agraj/R/x86_64-pc-linux-gnu-library/2.14")
+
+setwd("/home/agraj/Documents/R_ECON582") 
+card <- read.table('card.csv',header=TRUE,sep=",") 
+attach(card)
+
+lwage <- log(wage)
+exper_sq <- exper^2
+# part (a)
+ols <- lm(lwage ~ educ + exper + exper_sq + south + black)
+summary(ols)
+# part (b)
+sls1 <- ivreg(lwage ~ educ + exper + exper_sq + south + black | nearc4 + exper + exper_sq + south + black )
+summary(sls1)
+# part (c)
+sls2 <- ivreg(lwage ~ educ + exper + exper_sq + south + black | nearc4 + nearc2 + motheduc + fathedu + exper + exper_sq + south + black )
+summary(sls2)
+# part (d)
+gmm1 <- gmm(lwage ~ educ + exper + exper_sq + south + black , ~ nearc4 + nearc2 + motheduc + fathedu + exper + exper_sq + south + black)
+summary(gmm1)
+#part (e)
+specTest(gmm1)
+
+stargazer(ols, sls1, sls2, gmm1)

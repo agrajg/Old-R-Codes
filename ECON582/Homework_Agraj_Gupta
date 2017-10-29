@@ -1,0 +1,286 @@
+Simulation and Data analysis
+
+Question 1
+
+Code:
+
+######################################################################
+rm(list=ls (all=TRUE))
+library("AER", lib.loc="/home/agraj/R/x86_64-pc-linux-gnu-library/2.14")
+library("gmm", lib.loc="/home/agraj/R/x86_64-pc-linux-gnu-library/2.14")
+
+setwd("/home/agraj/Documents/R_ECON582") 
+card <- read.table('card.csv',header=TRUE,sep=",") 
+attach(card)
+
+lwage <- log(wage)
+exper_sq <- exper^2
+# part (a)
+ols <- lm(lwage ~ educ + exper + exper_sq + south + black)
+summary(ols)
+# part (b)
+sls1 <- ivreg(lwage ~ educ + exper + exper_sq + south + black | nearc4 + exper + exper_sq + south + black )
+summary(sls1)
+# part (c)
+sls2 <- ivreg(lwage ~ educ + exper + exper_sq + south + black | nearc4 + nearc2 + motheduc + fathedu + exper + exper_sq + south + black )
+summary(sls2)
+# part (d)
+gmm1 <- gmm(lwage ~ educ + exper + exper_sq + south + black , ~ nearc4 + nearc2 + motheduc + fathedu + exper + exper_sq + south + black)
+summary(gmm1)
+#part (e)
+specTest(gmm1)
+
+stargazer(ols, sls1, sls2, gmm1)
+#######################################################################
+
+
+
+
+
+#part(a)
+######################OLS##############################################
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-1.72697 -0.23572  0.02079  0.25185  1.38575 
+
+Coefficients:
+              Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  4.7351370  0.0796201  59.472  < 2e-16 ***
+educ         0.0801979  0.0041215  19.458  < 2e-16 ***
+exper        0.0893185  0.0080654  11.074  < 2e-16 ***
+exper_sq    -0.0024553  0.0004049  -6.065 1.55e-09 ***
+south       -0.1359072  0.0177517  -7.656 2.85e-14 ***
+black       -0.1590878  0.0237734  -6.692 2.78e-11 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
+
+Residual standard error: 0.3842 on 2209 degrees of freedom
+Multiple R-squared: 0.2373,	Adjusted R-squared: 0.2356 
+F-statistic: 137.5 on 5 and 2209 DF,  p-value: < 2.2e-16 
+
+
+
+
+
+
+#part(b)
+######################2SLS - identified##################################
+Call:
+ivreg(formula = lwage ~ educ + exper + exper_sq + south + black | 
+    nearc4 + exper + exper_sq + south + black)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-2.23948 -0.30148  0.02112  0.31994  1.79481 
+
+Coefficients:
+              Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  2.2658645  1.0254271   2.210 0.027230 *  
+educ         0.2225957  0.0590809   3.768 0.000169 ***
+exper        0.1506941  0.0272726   5.525 3.67e-08 ***
+exper_sq    -0.0026825  0.0005112  -5.248 1.69e-07 ***
+south       -0.0856252  0.0302880  -2.827 0.004740 ** 
+black       -0.0358844  0.0588553  -0.610 0.542120    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
+
+Residual standard error: 0.4768 on 2209 degrees of freedom
+Multiple R-Squared: -0.1748,	Adjusted R-squared: -0.1775 
+Wald test: 42.92 on 5 and 2209 DF,  p-value: < 2.2e-16 
+
+
+
+
+
+#part(c)
+######################2SLS - overidentification###########################
+Call:
+ivreg(formula = lwage ~ educ + exper + exper_sq + south + black | 
+    nearc4 + nearc2 + motheduc + fathedu + exper + exper_sq + 
+        south + black)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-1.86157 -0.23795  0.02904  0.24699  1.44716 
+
+Coefficients:
+              Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  4.0866511  0.2193434  18.631  < 2e-16 ***
+educ         0.1175947  0.0124800   9.423  < 2e-16 ***
+exper        0.1054371  0.0096507  10.925  < 2e-16 ***
+exper_sq    -0.0025149  0.0004128  -6.093 1.30e-09 ***
+south       -0.1227020  0.0185496  -6.615 4.65e-11 ***
+black       -0.1267319  0.0262610  -4.826 1.49e-06 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
+
+Residual standard error: 0.3913 on 2209 degrees of freedom
+Multiple R-Squared: 0.2089,	Adjusted R-squared: 0.2071 
+Wald test: 77.28 on 5 and 2209 DF,  p-value: < 2.2e-16 
+
+
+
+
+
+#part(d)
+############################GMM##########################################
+Call:
+gmm(g = lwage ~ educ + exper + exper_sq + south + black, x = ~nearc4 + 
+    nearc2 + motheduc + fathedu + exper + exper_sq + south + 
+    black)
+
+
+Method:  twoStep 
+
+Kernel:  Quadratic Spectral(with bw =  2.68257 )
+
+Coefficients:
+             Estimate     Std. Error   t value      Pr(>|t|)   
+(Intercept)   4.1125e+00   2.2838e-01   1.8007e+01   1.7145e-72
+educ          1.1670e-01   1.3254e-02   8.8049e+00   1.3094e-18
+exper         1.0307e-01   9.9223e-03   1.0388e+01   2.8217e-25
+exper_sq     -2.4223e-03   4.4408e-04  -5.4546e+00   4.9081e-08
+south        -1.2730e-01   1.9290e-02  -6.5996e+00   4.1233e-11
+black        -1.3095e-01   2.7385e-02  -4.7817e+00   1.7381e-06
+
+J-Test: degrees of freedom is 3 
+                J-test      P-value   
+Test E(g)=0:    14.9673764   0.0018447
+
+Initial values of the coefficients
+ (Intercept)         educ        exper     exper_sq        south        black 
+ 4.086651136  0.117594693  0.105437070 -0.002514932 -0.122702045 -0.126731857 
+
+
+
+#part(e)
+################################J statistic###################################
+ ##  J-Test: degrees of freedom is 3  ## 
+
+                J-test      P-value   
+Test E(g)=0:    14.9673764   0.0018447
+##############################################################################
+
+
+
+#part(f)
+
+Discussion:
+The first regression model is linear and the estimates are significant but 
+that reflects just mere correlation and not causality of education 
+on the wages. The estimation might be effected by variation in the error term 
+and hence the coefficient of the education may not be consistant. To do a consi-
+tant estimation we need to instrument educ with some exogenous variable, in this 
+near4. This is just identified case.
+
+In this data we can have more instruments than the number of endogenous variables 
+and hence an overidentified model. The coefficients are consistant but not efficient.
+In order to obtain efficient estimates we apply gmm to put more weights on the 
+instruments which have less variation, ie more weight on instruments that will 
+prove better in terms of explaining endogenous variable.
+
+One of the necessary conditions for applying GMM is that the moment condition must 
+hold. To check that we calculate the J statistic. the results of the J-test imply 
+that we can reject the null ie the moment condition does not hold. 
+##############################################################################
+##############################################################################
+##############################################################################
+
+
+
+##############################################################################
+QUESTION 2
+##############################################################################
+
+CODE:
+
+rm(list=ls (all=TRUE))
+library("mnormt")
+library("MASS", lib.loc="/usr/lib/R/library")
+library("graphics")
+beta0 <- 1
+####################WEAK INSTRUMENT#######################
+### n=100, repetitions = 10000, pi = 0.01##################
+##########################################################
+n <- 100
+Z = rnorm(n, mean = 0, sd = 1)
+pi1 <- 0.01 # weak instrument
+mu <- matrix(c(0,0),2,1)
+Sigma <- matrix(c(1, 0.90,1,0.90),2,2)
+reps = 10000 # number of repetitions for simulating data
+beta_hat1 <- mat.or.vec(reps, 1)
+for (i in 1:reps)
+{
+  E<- mvrnorm(n,mu,Sigma)
+  X <- Z*pi1 + E[,2]
+  Y <- X*beta0 + E[,1]
+  ZX <-t(Z) %*% X
+  ZX1 <-solve(ZX)
+  ZY <-t(Z) %*% Y
+  beta_hat1[i] <-ZX1 %*% ZY # Beta GMM for exactly dentified case with weak instrument
+}
+bias_beta_hat1 <- mean(beta_hat1)-1
+hist(beta_hat1, breaks=100000 ,xlab='Beta hat', xlim = (c(-5,5)), main = 'Beta Hat with Weak Instrument(pi=0.1), n=100')
+
+
+####################WEAK INSTRUMENT#######################
+### n=10000, repetitions = 10000, pi = 0.01 ###############
+##########################################################
+n1 <- 10000
+i<-0
+Z = rnorm(n1, mean = 0, sd = 1)
+pi2 <- 0.01 # weak instrument
+mu <- matrix(c(0,0),2,1)
+Sigma <- matrix(c(1, 0.90,1,0.90),2,2)
+reps = 10000 # number of repetitions for simulating data
+beta_hat2 <- mat.or.vec(reps, 1)
+for (i in 1:reps)
+{
+  E<- mvrnorm(n,mu,Sigma)
+  X <- Z*pi2 + E[,2]
+  Y <- X*beta0 + E[,1]
+  ZX <-t(Z) %*% X
+  ZX1 <-solve(ZX)
+  ZY <-t(Z) %*% Y
+  beta_hat2[i] <-ZX1 %*% ZY # Beta GMM for exactly dentified case with weak instrument
+}
+bias_beta_hat2 <- mean(beta_hat2)-1
+hist(beta_hat2,breaks=100000 ,xlab='Beta hat', xlim = (c(-5,5)),main = 'Beta Hat with Weak Instrument(pi=0.01), n=10000')
+
+####################WEAK INSTRUMENT#######################
+### n=100, repetitions = 10000, pi = 1 ###################
+##########################################################
+n <- 100
+i<-0
+Z = rnorm(n, mean = 0, sd = 1)
+pi3 <- 1# Strong instrument
+mu <- matrix(c(0,0),2,1)
+Sigma <- matrix(c(1, 0.90,1,0.90),2,2)
+reps = 10000 # number of repetitions for simulating data
+beta_hat3 <- mat.or.vec(reps, 1)
+for (i in 1:reps)
+{
+  E<- mvrnorm(n,mu,Sigma)
+  X <- Z*pi3 + E[,2]
+  Y <- X*beta0 + E[,1]
+  ZX <-t(Z) %*% X
+  ZX1 <-solve(ZX)
+  ZY <-t(Z) %*% Y
+  beta_hat3[i] <-ZX1 %*% ZY # Beta GMM for exactly dentified case with Strong instrument
+}
+bias_beta_hat3 <- mean(beta_hat3)-1
+hist(beta_hat3, breaks=100000 ,xlab='Beta hat', xlim = (c(-5,5)),main = 'Beta Hat with Strong Instrument(pi=1), n=10000')
+
+################################################################3
+#################################################################
+#################################################################
+#################################################################
+BIASES
+
+Bias(pi=0.01, n=100) = 0.9435
+Bias(pi=0.01, n=10000) = -0.1725
+Bias(pi=1, n=10000) = -0.0088
+#################################################################
+#################################################################
+#################################################################

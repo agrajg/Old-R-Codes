@@ -1,4 +1,10 @@
 *.tex
+*.png
+*.txt
+*.dat
+*.jpg
+*.asv
+
 
 # History files
 *.Rhistory
